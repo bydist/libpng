@@ -13,4 +13,12 @@ endif()
 byd__cmake__configure__add_arg(${package} PNG_SHARED ${BUILD_SHARED_LIBS})
 byd__cmake__configure__add_arg(${package} PNG_STATIC ${BUILD_STATIC_LIBS})
 
+
+file(GLOB patchList
+    LIST_DIRECTORIES false
+    "${CMAKE_CURRENT_LIST_DIR}/patch/*.patch"
+    )
+byd__custom_patch(${package} patchList)
+
+
 byd__cmake__add(${package})

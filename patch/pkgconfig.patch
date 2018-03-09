@@ -1,0 +1,62 @@
+From 26fb17378908f4ca7cfbdf184b79b23d8aec61e7 Mon Sep 17 00:00:00 2001
+From: David Callu <callu.david@gmail.com>
+Date: Fri, 9 Mar 2018 19:31:32 +0100
+Subject: [PATCH] chore(cmake): fix generation of libpng{-config,.pc} to add
+ 'd' postfix in debug mode
+
+---
+ CMakeLists.txt   | 5 +++++
+ libpng-config.in | 4 ++--
+ libpng.pc.in     | 2 +-
+ 3 files changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 1c004e496..4de6dff06 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -832,10 +832,15 @@ if(NOT WIN32 OR CYGWIN OR MINGW)
+   set(libdir      ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
+   set(includedir  ${CMAKE_INSTALL_PREFIX}/include)
+   set(LIBS        "-lz -lm")
++  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
++    set(PNGLIB_POSTFIX ${CMAKE_DEBUG_POSTFIX})
++  endif()
++  file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/${PNGLIB_NAME}.pc)
+   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/libpng.pc.in
+     ${CMAKE_CURRENT_BINARY_DIR}/${PNGLIB_NAME}.pc @ONLY)
+   CREATE_SYMLINK(libpng.pc FILE ${PNGLIB_NAME}.pc)
+ 
++  file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/${PNGLIB_NAME}-config)
+   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/libpng-config.in
+     ${CMAKE_CURRENT_BINARY_DIR}/${PNGLIB_NAME}-config @ONLY)
+   CREATE_SYMLINK(libpng-config FILE ${PNGLIB_NAME}-config)
+diff --git a/libpng-config.in b/libpng-config.in
+index 69bf8e33f..28c5cd789 100644
+--- a/libpng-config.in
++++ b/libpng-config.in
+@@ -16,8 +16,8 @@ prefix="@prefix@"
+ exec_prefix="@exec_prefix@"
+ libdir="@libdir@"
+ includedir="@includedir@/libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@"
+-libs="-lpng@PNGLIB_MAJOR@@PNGLIB_MINOR@"
+-all_libs="-lpng@PNGLIB_MAJOR@@PNGLIB_MINOR@ @LIBS@"
++libs="-lpng@PNGLIB_MAJOR@@PNGLIB_MINOR@@LIBPNG_POSTFIX@"
++all_libs="-lpng@PNGLIB_MAJOR@@PNGLIB_MINOR@@LIBPNG_POSTFIX@ @LIBS@"
+ I_opts="-I${includedir}"
+ L_opts="-L${libdir}"
+ R_opts=""
+diff --git a/libpng.pc.in b/libpng.pc.in
+index 9708e9af2..0e8a41dbf 100644
+--- a/libpng.pc.in
++++ b/libpng.pc.in
+@@ -7,6 +7,6 @@ Name: libpng
+ Description: Loads and saves PNG files
+ Version: @PNGLIB_VERSION@
+ Requires: zlib
+-Libs: -L${libdir} -lpng@PNGLIB_MAJOR@@PNGLIB_MINOR@
++Libs: -L${libdir} -lpng@PNGLIB_MAJOR@@PNGLIB_MINOR@@PNGLIB_POSTFIX@
+ Libs.private: @LIBS@
+ Cflags: -I${includedir}
+-- 
+2.14.2
+
